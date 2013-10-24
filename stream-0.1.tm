@@ -12,88 +12,63 @@ namespace eval stream {
   namespace ensemble create
 }
 
-proc stream::create {first rest isEmpty {state 0}} {
-  return [list $first $rest $isEmpty $state]
+proc stream::create {first rest} {
+  return [list $first $rest]
 }
 
 proc stream::first {stream} {
   lassign $stream first
-  {*}$first $stream
+  $first
 }
 
 proc stream::rest {stream} {
   set rest [lindex $stream 1]
-  {*}$rest $stream
+  {*}$rest
 }
 
 proc stream::isEmpty {stream} {
-  set isEmpty [lindex $stream 2]
-  {*}$isEmpty $stream
+  expr {[llength $stream] == 0}
 }
 
 proc stream::map {cmdPrefix stream} {
-  lassign $stream first rest isEmpty
-  set mapper {{cmdPrefix first stream} {
-    {*}$cmdPrefix [{*}$first $stream]
-  }}
-  create [list apply $mapper $cmdPrefix $first] $rest $isEmpty
+  lassign $stream first rest
+  if {[isEmpty $stream]} {
+    return $stream
+  } else {
+    create [{*}$cmdPrefix $first] [list stream map $cmdPrefix [{*}$rest]]
+  }
 }
 
 proc stream::zip {args} {
-  set zipperFirst {{thisStream} {
-    set streams [lindex $thisStream 3]
-    set res [::list]
-    foreach stream $streams {
-      lassign $stream first
-      lappend res [{*}$first $stream]
+  set firsts [::list]
+  set restStreams [::list]
+  foreach stream $args {
+    if {[isEmpty $stream]} {
+      return $stream
     }
-    return $res
-  }}
-
-  set zipperRest {{thisStream} {
-    lassign $thisStream first rest isEmpty streams
-    set res [::list]
-    foreach stream $streams {
-      set _rest [lindex $stream 1]
-      lappend res [{*}$_rest $stream]
-    }
-    stream create $first $rest $isEmpty $res
-
-  }}
-
-  set zipperIsEmpty {{thisStream} {
-    set streams [lindex $thisStream 3]
-    foreach stream $streams {
-      set isEmpty [lindex $stream 2]
-      if {[{*}$isEmpty $stream]} {
-        return 1
-      }
-    }
-    return 0
-  }}
-
-  create [list apply $zipperFirst]   \
-         [list apply $zipperRest]    \
-         [list apply $zipperIsEmpty] \
-         $args
+    lassign $stream first rest
+    lappend firsts $first
+    lappend restStreams [{*}$rest]
+  }
+  return [create $firsts [list stream zip {*}$restStreams]]
 }
 
 proc stream::foldl {cmdPrefix initialValue stream} {
-  lassign $stream first rest isEmpty
   set acc $initialValue
-  while {![{*}$isEmpty $stream]} {
-    set acc [{*}$cmdPrefix $acc [{*}$first $stream]]
-    set stream [{*}$rest $stream]
+  while {![isEmpty $stream]} {
+    lassign $stream first rest
+    set acc [{*}$cmdPrefix $acc $first]
+    set stream [{*}$rest]
   }
   return $acc
 }
 
 proc stream::toList {stream} {
-  lassign $stream first rest isEmpty
   set res [::list]
-  while {![{*}$isEmpty $stream]} {
-    lappend res [{*}$first $stream]
-    set stream [{*}$rest $stream]
+  while {![isEmpty $stream]} {
+    lassign $stream first rest
+    lappend res $first
+    set stream [{*}$rest]
   }
   return $res
 }

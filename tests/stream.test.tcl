@@ -11,6 +11,23 @@ source [file join $ThisScriptDir test_helpers.tcl]
 
 package require stream
 
+
+test toList-1 {Checks that toList outputs the stream to a list} \
+-setup {
+  set endNum 10
+  set expectedList {}
+
+  for {set i 0} {$i <= $endNum} {incr i} {
+    lappend expectedList $i
+  }
+
+  set seq [TestHelpers::range 0 $endNum]
+
+} -body {
+  set aList [stream toList $seq]
+  ::struct::list equal $aList $expectedList
+} -result 1
+
 test map-1 {Checks that map processes the correct values} \
 -setup {
   set thousand 1000
@@ -20,21 +37,6 @@ test map-1 {Checks that map processes the correct values} \
   for {set i 0} {$i <= $endNum} {incr i} {
     lappend expectedList [expr {$i + $thousand}]
   }
-
-  set first {{stream} {
-    lassign $stream first rest isEmpty state
-    return $state
-  }}
-
-  set rest {{stream} {
-    lassign $stream first rest isEmpty state
-    stream create $first $rest $isEmpty [expr {$state + 1}]
-  }}
-
-  set isEmpty {{listSize stream} {
-    lassign $stream first rest isEmpty state
-    expr {$state >= $listSize}
-  }}
 
   set seq [TestHelpers::range 0 $endNum]
 
