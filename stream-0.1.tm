@@ -5,7 +5,7 @@
 # Licensed under an MIT licence.  Please see LICENCE.md for details.
 #
 
-package require Tcl 8.6
+package require Tcl 8.5
 
 namespace eval stream {
   namespace export {[a-z]*}
