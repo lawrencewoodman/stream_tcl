@@ -12,21 +12,37 @@ source [file join $ThisScriptDir test_helpers.tcl]
 package require stream
 
 
-test toList-1 {Checks that toList outputs the stream to a list} \
+test foldl-1 {Checks foldl outputs the accumulated value for non-empty list} \
 -setup {
+  set thousand 1000
   set endNum 10
-  set expectedList {}
+  set expectedSum [expr {$endNum*($endNum+1)/2+3}]
+  set seq [TestHelpers::range 1 $endNum]
 
-  for {set i 0} {$i <= $endNum} {incr i} {
-    lappend expectedList $i
-  }
+  proc add {a b} {expr {$a + $b}}
+  proc mapper {num item} {expr {$item + $num}}
+} -body {
+  set listSum [stream foldl add 3 $seq]
+  expr {$listSum == $expectedSum}
+} -result 1
 
-  set seq [TestHelpers::range 0 $endNum]
+
+test foldl-2 {Checks foldl outputs the initial value for an empty list} \
+-setup {
+  set thousand 1000
+  set listSize 0
+
+  set expectedSum 3
+
+  set emptySeq [TestHelpers::emptyStream]
+  proc add {a b} {expr {$a + $b}}
+  proc mapper {num item} {expr {$item + $num}}
 
 } -body {
-  set aList [stream toList $seq]
-  ::struct::list equal $aList $expectedList
+  set listSum [stream foldl add 3 $emptySeq]
+  expr {$listSum == $expectedSum}
 } -result 1
+
 
 test map-1 {Checks that map processes the correct values} \
 -setup {
@@ -48,35 +64,23 @@ test map-1 {Checks that map processes the correct values} \
   ::struct::list equal $aList $expectedList
 } -result 1
 
-test foldl-1 {Checks foldl outputs the accumulated value for non-empty list} \
+
+test toList-1 {Checks that toList outputs the stream to a list} \
 -setup {
-  set thousand 1000
   set endNum 10
-  set expectedSum [expr {$endNum*($endNum+1)/2+3}]
-  set seq [TestHelpers::range 1 $endNum]
+  set expectedList {}
 
-  proc add {a b} {expr {$a + $b}}
-  proc mapper {num item} {expr {$item + $num}}
-} -body {
-  set listSum [stream foldl add 3 $seq]
-  expr {$listSum == $expectedSum}
-} -result 1
+  for {set i 0} {$i <= $endNum} {incr i} {
+    lappend expectedList $i
+  }
 
-test foldl-2 {Checks foldl outputs the initial value for an empty list} \
--setup {
-  set thousand 1000
-  set listSize 0
-
-  set expectedSum 3
-
-  set emptySeq [TestHelpers::emptyStream]
-  proc add {a b} {expr {$a + $b}}
-  proc mapper {num item} {expr {$item + $num}}
+  set seq [TestHelpers::range 0 $endNum]
 
 } -body {
-  set listSum [stream foldl add 3 $emptySeq]
-  expr {$listSum == $expectedSum}
+  set aList [stream toList $seq]
+  ::struct::list equal $aList $expectedList
 } -result 1
+
 
 test zip-1 {Checks zip combines multiple streams} \
 -setup {
@@ -98,6 +102,7 @@ test zip-1 {Checks zip combines multiple streams} \
   ::struct::list equal $aList $expectedList
 } -result 1
 
+
 test zip-2 {Checks zip stops combining at shortest stream} \
 -setup {
   set endNum 10
@@ -117,5 +122,6 @@ test zip-2 {Checks zip stops combining at shortest stream} \
   set aList [stream toList $zippedList]
   ::struct::list equal $aList $expectedList
 } -result 1
+
 
 cleanupTests

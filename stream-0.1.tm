@@ -21,9 +21,14 @@ proc stream::first {stream} {
   $first
 }
 
-proc stream::rest {stream} {
-  set rest [lindex $stream 1]
-  {*}$rest
+proc stream::foldl {cmdPrefix initialValue stream} {
+  set acc $initialValue
+  while {![isEmpty $stream]} {
+    lassign $stream first rest
+    set acc [{*}$cmdPrefix $acc $first]
+    set stream [{*}$rest]
+  }
+  return $acc
 }
 
 proc stream::isEmpty {stream} {
@@ -39,6 +44,21 @@ proc stream::map {cmdPrefix stream} {
   }
 }
 
+proc stream::rest {stream} {
+  set rest [lindex $stream 1]
+  {*}$rest
+}
+
+proc stream::toList {stream} {
+  set res [::list]
+  while {![isEmpty $stream]} {
+    lassign $stream first rest
+    lappend res $first
+    set stream [{*}$rest]
+  }
+  return $res
+}
+
 proc stream::zip {args} {
   set firsts [::list]
   set restStreams [::list]
@@ -51,24 +71,4 @@ proc stream::zip {args} {
     lappend restStreams [{*}$rest]
   }
   return [create $firsts [list stream zip {*}$restStreams]]
-}
-
-proc stream::foldl {cmdPrefix initialValue stream} {
-  set acc $initialValue
-  while {![isEmpty $stream]} {
-    lassign $stream first rest
-    set acc [{*}$cmdPrefix $acc $first]
-    set stream [{*}$rest]
-  }
-  return $acc
-}
-
-proc stream::toList {stream} {
-  set res [::list]
-  while {![isEmpty $stream]} {
-    lassign $stream first rest
-    lappend res $first
-    set stream [{*}$rest]
-  }
-  return $res
 }
