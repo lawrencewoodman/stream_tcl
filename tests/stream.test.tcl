@@ -64,22 +64,40 @@ test map-1 {Checks that map processes the correct values} \
   ::struct::list equal $aList $expectedList
 } -result 1
 
+test take-1 {Checks that take outputs empty list if no elements requested} \
+-setup {
+  set endNum 10
+  set seq [TestHelpers::range 0 $endNum]
+
+} -body {
+  stream toList [stream take 0 $seq]
+} -result {}
+
+test take-2 {Checks that take outputs the correct number of elements} \
+-setup {
+  set endNum 10
+  set seq [TestHelpers::range 0 $endNum]
+
+} -body {
+  stream toList [stream take 5 $seq]
+} -result {0 1 2 3 4}
+
+test take-3 {Checks that take outputs as many elements as it can if more \
+requested than available} \
+-setup {
+  set endNum 10
+  set seq [TestHelpers::range 0 $endNum]
+} -body {
+  stream toList [stream take 15 $seq]
+} -result {0 1 2 3 4 5 6 7 8 9 10}
 
 test toList-1 {Checks that toList outputs the stream to a list} \
 -setup {
   set endNum 10
-  set expectedList {}
-
-  for {set i 0} {$i <= $endNum} {incr i} {
-    lappend expectedList $i
-  }
-
   set seq [TestHelpers::range 0 $endNum]
-
 } -body {
-  set aList [stream toList $seq]
-  ::struct::list equal $aList $expectedList
-} -result 1
+  stream toList $seq
+} -result {0 1 2 3 4 5 6 7 8 9 10}
 
 
 test zip-1 {Checks zip combines multiple streams} \

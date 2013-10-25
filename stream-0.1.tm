@@ -49,6 +49,15 @@ proc stream::rest {stream} {
   {*}$rest
 }
 
+proc stream::take {num stream} {
+  lassign $stream first rest
+  if {[isEmpty $stream] || $num <= 0} {
+    return [::list]
+  } else {
+    create $first [list stream take [expr {$num - 1}] [{*}$rest]]
+  }
+}
+
 proc stream::toList {stream} {
   set res [::list]
   while {![isEmpty $stream]} {
