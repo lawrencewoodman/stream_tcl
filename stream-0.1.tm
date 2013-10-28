@@ -42,10 +42,9 @@ proc stream::map {cmdPrefix args} {
   } elseif {$numArgs > 1} {
     MapMultiStream $cmdPrefix {*}$args
   } else {
-    Usage "stream map cmdPrefix stream ..."
+    Usage "stream map cmdPrefix stream ?stream ..?"
   }
 }
-
 
 proc stream::rest {stream} {
   set rest [lindex $stream 1]
