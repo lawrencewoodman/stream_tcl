@@ -44,6 +44,50 @@ test foldl-2 {Checks foldl outputs the initial value for an empty list} \
 } -result 1
 
 
+test foreach-1 {Checks that body is run for each value in stream} \
+-setup {
+  set seq [TestHelpers::range 1 5]
+} -body {
+  set total 0
+  stream foreach item $seq {
+    incr total $item
+  }
+  set total
+} -result 15
+
+test foreach-2 {Checks that returns result of last execution in body} \
+-setup {
+  set seq [TestHelpers::range 1 5]
+} -body {
+  stream foreach item $seq {
+    expr {7 + $item}
+  }
+} -result 12
+
+test foreach-3 {Checks that processes multiple streams} \
+-setup {
+  set seq1 [TestHelpers::range 1 5]
+  set seq2 [TestHelpers::range 2 6]
+} -body {
+  set total 0
+  stream foreach itemA $seq1 itemB $seq2 {
+    incr total [expr {$itemA + $itemB}]
+  }
+  set total
+} -result 35
+
+test foreach-4 {Checks that returns result of last execution in body, when \
+processing multiple streams} \
+-setup {
+  set seq1 [TestHelpers::range 1 5]
+  set seq2 [TestHelpers::range 2 6]
+} -body {
+  stream foreach itemA $seq1 itemB $seq2 {
+    expr {$itemA + $itemB}
+  }
+} -result 11
+
+
 test map-1 {Checks that map processes the correct values} \
 -setup {
   set thousand 1000

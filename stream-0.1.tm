@@ -31,6 +31,18 @@ proc stream::foldl {cmdPrefix initialValue stream} {
   return $acc
 }
 
+proc stream::foreach {args} {
+  set numArgs [llength $args]
+  if {$numArgs == 3} {
+    lassign $args varName stream body
+    ForeachSingleStream $varName $stream $body
+  } elseif {($numArgs > 3) && (($numArgs % 2) == 1)} {
+    ForeachMultiStream {*}$args
+  } else {
+    Usage "stream foreach varName stream ?varName stream ..? body"
+  }
+}
+
 proc stream::isEmpty {stream} {
   expr {[llength $stream] == 0}
 }
@@ -73,7 +85,7 @@ proc stream::toList {stream} {
 proc stream::zip {args} {
   set firsts [::list]
   set restStreams [::list]
-  foreach stream $args {
+  ::foreach stream $args {
     if {[isEmpty $stream]} {
       return $stream
     }
@@ -87,6 +99,38 @@ proc stream::zip {args} {
 #################################
 #           Internal
 #################################
+proc stream::ForeachSingleStream {varName stream body} {
+  set res {}
+  while {![isEmpty $stream]} {
+    lassign $stream first rest
+    uplevel 2 [list set $varName $first]
+    set stream [{*}$rest]
+    set res [uplevel 2 $body]
+  }
+  return $res
+}
+
+proc stream::ForeachMultiStream {args} {
+  set body [lindex $args end]
+  set items [lrange $args 0 end-1]
+  set res {}
+
+  while 1 {
+    set nextArgs [::list]
+    ::foreach {varName stream} $items {
+      if {[isEmpty $stream]} {
+        return $res
+      }
+      lassign $stream first rest
+      uplevel 2 [list set $varName $first]
+      lappend nextArgs $varName
+      lappend nextArgs [{*}$rest]
+    }
+    set res [uplevel 2 $body]
+    set items $nextArgs
+  }
+  return $res
+}
 
 proc stream::MapSingleStream {cmdPrefix stream} {
   lassign $stream first rest
@@ -99,7 +143,7 @@ proc stream::MapSingleStream {cmdPrefix stream} {
 proc stream::MapMultiStream {cmdPrefix args} {
   set firsts [::list]
   set restStreams [::list]
-  foreach stream $args {
+  ::foreach stream $args {
     if {[isEmpty $stream]} {
       return $stream
     }
