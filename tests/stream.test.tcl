@@ -64,6 +64,34 @@ test map-1 {Checks that map processes the correct values} \
   ::struct::list equal $aList $expectedList
 } -result 1
 
+test map-2 {Checks that map takes multiple streams} \
+-setup {
+  set seq1 [TestHelpers::range 0 5]
+  set seq2 [TestHelpers::range 10 15]
+
+  proc mapper {a b} {
+    expr {$a + $b}
+  }
+
+} -body {
+  set mappedList [stream map mapper $seq1 $seq2]
+  set aList [stream toList $mappedList]
+} -result {10 12 14 16 18 20}
+
+test map-3 {Checks that map stops at end of shortest stream} \
+-setup {
+  set seq1 [TestHelpers::range 0 5]
+  set seq2 [TestHelpers::range 10 20]
+
+  proc mapper {a b} {
+    expr {$a + $b}
+  }
+
+} -body {
+  set mappedList [stream map mapper $seq1 $seq2]
+  set aList [stream toList $mappedList]
+} -result {10 12 14 16 18 20}
+
 test take-1 {Checks that take outputs empty list if no elements requested} \
 -setup {
   set endNum 10

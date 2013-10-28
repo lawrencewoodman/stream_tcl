@@ -35,14 +35,17 @@ proc stream::isEmpty {stream} {
   expr {[llength $stream] == 0}
 }
 
-proc stream::map {cmdPrefix stream} {
-  lassign $stream first rest
-  if {[isEmpty $stream]} {
-    return $stream
+proc stream::map {cmdPrefix args} {
+  set numArgs [llength $args]
+  if {$numArgs == 1} {
+    MapSingleStream $cmdPrefix [lindex $args 0]
+  } elseif {$numArgs > 1} {
+    MapMultiStream $cmdPrefix {*}$args
   } else {
-    create [{*}$cmdPrefix $first] [list stream map $cmdPrefix [{*}$rest]]
+    Usage "stream map cmdPrefix stream ..."
   }
 }
+
 
 proc stream::rest {stream} {
   set rest [lindex $stream 1]
@@ -54,7 +57,7 @@ proc stream::take {num stream} {
   if {[isEmpty $stream] || $num <= 0} {
     return [::list]
   } else {
-    create $first [list stream take [expr {$num - 1}] [{*}$rest]]
+    create $first [list take [expr {$num - 1}] [{*}$rest]]
   }
 }
 
@@ -79,5 +82,36 @@ proc stream::zip {args} {
     lappend firsts $first
     lappend restStreams [{*}$rest]
   }
-  return [create $firsts [list stream zip {*}$restStreams]]
+  return [create $firsts [list zip {*}$restStreams]]
+}
+
+#################################
+#           Internal
+#################################
+
+proc stream::MapSingleStream {cmdPrefix stream} {
+  lassign $stream first rest
+  if {[isEmpty $stream]} {
+    return $stream
+  }
+  create [{*}$cmdPrefix $first] [list MapSingleStream $cmdPrefix [{*}$rest]]
+}
+
+proc stream::MapMultiStream {cmdPrefix args} {
+  set firsts [::list]
+  set restStreams [::list]
+  foreach stream $args {
+    if {[isEmpty $stream]} {
+      return $stream
+    }
+    lassign $stream first rest
+    lappend firsts $first
+    lappend restStreams [{*}$rest]
+  }
+  return [create [{*}$cmdPrefix {*}$firsts] \
+                 [list MapMultiStream $cmdPrefix {*}$restStreams]]
+}
+
+proc stream::Usage {msg} {
+  return -code error -level 2 "wrong # args: should be \"$msg\""
 }
