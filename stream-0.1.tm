@@ -38,7 +38,9 @@ proc stream::foreach {args} {
     lassign $args varName stream body
     ForeachSingleStream $varName $stream $body
   } elseif {($numArgs > 3) && (($numArgs % 2) == 1)} {
-    ForeachMultiStream {*}$args
+    set body [lindex $args end]
+    set items [lrange $args 0 end-1]
+    ForeachMultiStream $items $body
   } else {
     Usage "stream foreach varName stream ?varName stream ..? body"
   }
@@ -53,7 +55,7 @@ proc stream::map {cmdPrefix args} {
   if {$numArgs == 1} {
     MapSingleStream $cmdPrefix [lindex $args 0]
   } elseif {$numArgs > 1} {
-    MapMultiStream $cmdPrefix {*}$args
+    MapMultiStream $cmdPrefix $args
   } else {
     Usage "stream map cmdPrefix stream ?stream ..?"
   }
@@ -142,25 +144,24 @@ proc stream::ForeachSingleStream {varName stream body} {
   return $res
 }
 
-proc stream::ForeachMultiStream {args} {
-  set body [lindex $args end]
-  set items [lrange $args 0 end-1]
+proc stream::ForeachMultiStream {items body} {
   set res {}
 
   while 1 {
-    set nextArgs [::list]
+    set nextItems [::list]
     ::foreach {varName stream} $items {
       if {[isEmpty $stream]} {
         return $res
       }
       lassign $stream first rest
       uplevel 2 [list set $varName $first]
-      lappend nextArgs $varName
-      lappend nextArgs [{*}$rest]
+      lappend nextItems $varName
+      lappend nextItems [{*}$rest]
     }
     set res [uplevel 2 $body]
-    set items $nextArgs
+    set items $nextItems
   }
+
   return $res
 }
 
@@ -172,10 +173,11 @@ proc stream::MapSingleStream {cmdPrefix stream} {
   create [{*}$cmdPrefix $first] [list MapSingleStream $cmdPrefix [{*}$rest]]
 }
 
-proc stream::MapMultiStream {cmdPrefix args} {
+proc stream::MapMultiStream {cmdPrefix streams} {
   set firsts [::list]
   set restStreams [::list]
-  ::foreach stream $args {
+
+  ::foreach stream $streams {
     if {[isEmpty $stream]} {
       return $stream
     }
@@ -183,8 +185,9 @@ proc stream::MapMultiStream {cmdPrefix args} {
     lappend firsts $first
     lappend restStreams [{*}$rest]
   }
+
   return [create [{*}$cmdPrefix {*}$firsts] \
-                 [list MapMultiStream $cmdPrefix {*}$restStreams]]
+                 [list MapMultiStream $cmdPrefix $restStreams]]
 }
 
 proc stream::Usage {msg} {
