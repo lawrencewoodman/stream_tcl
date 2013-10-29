@@ -126,22 +126,12 @@ test isEmpty-2 {Checks that returns true if list empty} \
 test map-1 {Checks that map processes the correct values} \
 -setup {
   set thousand 1000
-  set endNum 10
-  set expectedList {}
-
-  for {set i 0} {$i <= $endNum} {incr i} {
-    lappend expectedList [expr {$i + $thousand}]
-  }
-
   set seq [TestHelpers::range 0 $endNum]
-
   proc mapper {num item} {expr {$item + $num}}
-
 } -body {
   set mappedList [stream map [list mapper $thousand] $seq]
-  set aList [stream toList $mappedList]
-  ::struct::list equal $aList $expectedList
-} -result 1
+  stream toList $mappedList
+} -result {1000 1001 1002 1003 1004 1005 1006 1007 1008 1009 1010}
 
 test map-2 {Checks that map takes multiple streams} \
 -setup {
@@ -154,7 +144,7 @@ test map-2 {Checks that map takes multiple streams} \
 
 } -body {
   set mappedList [stream map mapper $seq1 $seq2]
-  set aList [stream toList $mappedList]
+  stream toList $mappedList
 } -result {10 12 14 16 18 20}
 
 test map-3 {Checks that map stops at end of shortest stream} \
@@ -168,7 +158,7 @@ test map-3 {Checks that map stops at end of shortest stream} \
 
 } -body {
   set mappedList [stream map mapper $seq1 $seq2]
-  set aList [stream toList $mappedList]
+  stream toList $mappedList
 } -result {10 12 14 16 18 20}
 
 
