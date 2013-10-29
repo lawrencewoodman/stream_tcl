@@ -21,14 +21,15 @@ proc stream::first {stream} {
   $first
 }
 
-proc stream::foldl {cmdPrefix initialValue stream} {
-  set acc $initialValue
-  while {![isEmpty $stream]} {
-    lassign $stream first rest
-    set acc [{*}$cmdPrefix $acc $first]
-    set stream [{*}$rest]
+proc stream::foldl {cmdPrefix initialValue args} {
+  set numStreams [llength $args]
+  if {$numStreams == 1} {
+    FoldlSingleStream $cmdPrefix $initialValue [lindex $args 0]
+  } elseif {$numStreams > 1} {
+    FoldlMultiStream $cmdPrefix $initialValue $args
+  } else {
+    Usage "stream foldl cmdPrefix initalValue stream ?stream ..?"
   }
-  return $acc
 }
 
 proc stream::foreach {args} {
@@ -99,6 +100,37 @@ proc stream::zip {args} {
 #################################
 #           Internal
 #################################
+
+proc stream::FoldlSingleStream {cmdPrefix initialValue stream} {
+  set acc $initialValue
+  while {![isEmpty $stream]} {
+    lassign $stream first rest
+    set acc [{*}$cmdPrefix $acc $first]
+    set stream [{*}$rest]
+  }
+  return $acc
+}
+
+proc stream::FoldlMultiStream {cmdPrefix initialValue streams} {
+  set acc $initialValue
+
+  while 1 {
+    set firsts [::list]
+    set restStreams [::list]
+    ::foreach stream $streams {
+      if {[isEmpty $stream]} {
+        return $acc
+      }
+      lassign $stream first rest
+      lappend firsts $first
+      lappend restStreams [{*}$rest]
+    }
+    set acc [{*}$cmdPrefix $acc {*}$firsts]
+    set streams $restStreams
+  }
+  return $acc
+}
+
 proc stream::ForeachSingleStream {varName stream body} {
   set res {}
   while {![isEmpty $stream]} {

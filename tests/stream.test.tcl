@@ -34,6 +34,29 @@ test foldl-2 {Checks foldl outputs the initial value for an empty list} \
   stream foldl add 3 $emptySeq
 } -result 3
 
+test foldl-3 {Checks process multiple streams} \
+-setup {
+  set seq1 [TestHelpers::range 1 5]
+  set seq2 [TestHelpers::range 2 6]
+  proc sumMul {runningTotal a b} {
+    expr {$runningTotal + ($a * $b)}
+  }
+} -body {
+  stream foldl sumMul 3 $seq1 $seq2
+} -result 73
+
+test foldl-4 {Checks that stops at end of shortest stream when using \
+multiple streams} \
+-setup {
+  set seq1 [TestHelpers::range 1 5]
+  set seq2 [TestHelpers::range 2 15]
+  proc sumMul {runningTotal a b} {
+    expr {$runningTotal + ($a * $b)}
+  }
+} -body {
+  stream foldl sumMul 3 $seq1 $seq2
+} -result 73
+
 
 test foreach-1 {Checks that body is run for each value in stream} \
 -setup {
