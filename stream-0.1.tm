@@ -18,7 +18,7 @@ proc stream::create {first rest} {
 
 proc stream::first {stream} {
   lassign $stream first
-  $first
+  return $first
 }
 
 proc stream::foldl {cmdPrefix initialValue args} {

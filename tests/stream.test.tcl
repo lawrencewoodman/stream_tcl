@@ -11,6 +11,13 @@ source [file join $ThisScriptDir test_helpers.tcl]
 
 package require stream
 
+test first-1 {Checks outputs the first element of a stream} \
+-setup {
+  set seq [TestHelpers::range 3 15]
+} -body {
+  stream first $seq
+} -result 3
+
 
 test foldl-1 {Checks foldl outputs the accumulated value for non-empty list} \
 -setup {
@@ -23,7 +30,6 @@ test foldl-1 {Checks foldl outputs the accumulated value for non-empty list} \
   set listSum [stream foldl add 3 $seq]
   expr {$listSum == $expectedSum}
 } -result 1
-
 
 test foldl-2 {Checks foldl outputs the initial value for an empty list} \
 -setup {
@@ -102,6 +108,21 @@ processing multiple streams} \
 } -result 11
 
 
+test isEmpty-1 {Checks that returns false if list not empty} \
+-setup {
+  set seq [TestHelpers::range 1 1]
+} -body {
+  stream isEmpty $seq
+} -result 0
+
+test isEmpty-2 {Checks that returns true if list empty} \
+-setup {
+  set seq [TestHelpers::emptyStream]
+} -body {
+  stream isEmpty $seq
+} -result 1
+
+
 test map-1 {Checks that map processes the correct values} \
 -setup {
   set thousand 1000
@@ -149,6 +170,22 @@ test map-3 {Checks that map stops at end of shortest stream} \
   set mappedList [stream map mapper $seq1 $seq2]
   set aList [stream toList $mappedList]
 } -result {10 12 14 16 18 20}
+
+
+test rest-1 {Checks that returns the rest of the list} \
+-setup {
+  set seq [TestHelpers::range 3 8]
+} -body {
+  stream toList [stream rest $seq]
+} -result {4 5 6 7 8}
+
+test rest-2 {Checks that returns an empty list if no elements left} \
+-setup {
+  set seq [TestHelpers::range 1 1]
+} -body {
+  list [stream first $seq] [stream rest $seq]
+} -result {1 {}}
+
 
 test take-1 {Checks that take outputs empty list if no elements requested} \
 -setup {
