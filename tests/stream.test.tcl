@@ -14,13 +14,11 @@ package require stream
 
 test foldl-1 {Checks foldl outputs the accumulated value for non-empty list} \
 -setup {
-  set thousand 1000
   set endNum 10
   set expectedSum [expr {$endNum*($endNum+1)/2+3}]
   set seq [TestHelpers::range 1 $endNum]
 
   proc add {a b} {expr {$a + $b}}
-  proc mapper {num item} {expr {$item + $num}}
 } -body {
   set listSum [stream foldl add 3 $seq]
   expr {$listSum == $expectedSum}
@@ -29,19 +27,12 @@ test foldl-1 {Checks foldl outputs the accumulated value for non-empty list} \
 
 test foldl-2 {Checks foldl outputs the initial value for an empty list} \
 -setup {
-  set thousand 1000
-  set listSize 0
-
-  set expectedSum 3
-
   set emptySeq [TestHelpers::emptyStream]
   proc add {a b} {expr {$a + $b}}
-  proc mapper {num item} {expr {$item + $num}}
 
 } -body {
-  set listSum [stream foldl add 3 $emptySeq]
-  expr {$listSum == $expectedSum}
-} -result 1
+  stream foldl add 3 $emptySeq
+} -result 3
 
 
 test foreach-1 {Checks that body is run for each value in stream} \
