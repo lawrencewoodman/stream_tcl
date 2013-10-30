@@ -85,19 +85,6 @@ proc stream::toList {stream} {
   return $res
 }
 
-proc stream::zip {args} {
-  set firsts [::list]
-  set restStreams [::list]
-  ::foreach stream $args {
-    if {[isEmpty $stream]} {
-      return $stream
-    }
-    lassign $stream first rest
-    lappend firsts $first
-    lappend restStreams [{*}$rest]
-  }
-  return [create $firsts [list zip {*}$restStreams]]
-}
 
 #################################
 #           Internal

@@ -213,46 +213,4 @@ test toList-1 {Checks that toList outputs the stream to a list} \
 } -result {0 1 2 3 4 5 6 7 8 9 10}
 
 
-test zip-1 {Checks zip combines multiple streams} \
--setup {
-  set endNum 10
-  set expectedList {}
-
-  for {set i 0} {$i <= $endNum} {incr i} {
-    lappend expectedList [list [expr {$i}]       \
-                               [expr {$i + 1}]   \
-                               [expr {$i + 2}]]
-  }
-
-  set seq1 [TestHelpers::range 0 $endNum]
-  set seq2 [TestHelpers::range 1 [expr {$endNum + 1}]]
-  set seq3 [TestHelpers::range 2 [expr {$endNum + 2}]]
-} -body {
-  set zippedList [stream zip $seq1 $seq2 $seq3]
-  set aList [stream toList $zippedList]
-  ::struct::list equal $aList $expectedList
-} -result 1
-
-
-test zip-2 {Checks zip stops combining at shortest stream} \
--setup {
-  set endNum 10
-  set expectedList {}
-
-  for {set i 0} {$i <= $endNum} {incr i} {
-    lappend expectedList [list [expr {$i + 1}]   \
-                               [expr {$i}]       \
-                               [expr {$i + 2}]]
-  }
-
-  set seq1 [TestHelpers::range 1 [expr {$endNum + 100}]]
-  set seq2 [TestHelpers::range 0 $endNum]
-  set seq3 [TestHelpers::range 2 [expr {$endNum + 200}]]
-} -body {
-  set zippedList [stream zip $seq1 $seq2 $seq3]
-  set aList [stream toList $zippedList]
-  ::struct::list equal $aList $expectedList
-} -result 1
-
-
 cleanupTests
