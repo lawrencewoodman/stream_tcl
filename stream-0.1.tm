@@ -12,8 +12,8 @@ namespace eval stream {
   namespace ensemble create
 }
 
-proc stream::create {first rest} {
-  return [list $first $rest]
+proc stream::create {first restCmdPrefix} {
+  return [list $first $restCmdPrefix]
 }
 
 proc stream::first {stream} {
