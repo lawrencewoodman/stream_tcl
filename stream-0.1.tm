@@ -66,6 +66,20 @@ proc stream::rest {stream} {
   {*}$rest
 }
 
+# Note: This will work through the elements of the stream until it finds
+# the first element that is matched by the cmdPrefix predicate.
+proc stream::select {cmdPrefix stream} {
+  while {![isEmpty $stream]} {
+    lassign $stream first rest
+    if {[{*}$cmdPrefix $first]} {
+      return [create $first [list select $cmdPrefix [{*}$rest]]]
+    } else {
+      set stream [{*}$rest]
+    }
+  }
+  return $stream
+}
+
 proc stream::take {num stream} {
   lassign $stream first rest
   if {[isEmpty $stream] || $num <= 0} {

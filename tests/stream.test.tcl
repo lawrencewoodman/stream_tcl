@@ -177,7 +177,24 @@ test rest-2 {Checks that returns an empty list if no elements left} \
 } -result {1 {}}
 
 
-test take-1 {Checks that take outputs empty list if no elements requested} \
+test select-1 {Checks that outputs an empty stream if no matching elements} \
+-setup {
+  set seq [TestHelpers::range 0 10]
+  set gt10 {{el} {expr {$el > 10}}}
+} -body {
+  stream toList [stream select [list apply $gt10] $seq]
+} -result {}
+
+test select-2 {Checks that outputs elements for which the predicate matches} \
+-setup {
+  set seq [TestHelpers::range 0 10]
+  set divByThree {{el} {expr {$el % 3 == 0}}}
+} -body {
+  stream toList [stream select [list apply $divByThree] $seq]
+} -result {0 3 6 9}
+
+
+test take-1 {Checks that take outputs empty stream if no elements requested} \
 -setup {
   set endNum 10
   set seq [TestHelpers::range 0 $endNum]
