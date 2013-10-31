@@ -81,10 +81,10 @@ proc stream::select {cmdPrefix stream} {
 }
 
 proc stream::take {num stream} {
-  lassign $stream first rest
   if {[isEmpty $stream] || $num <= 0} {
     return [::list]
   } else {
+    lassign $stream first rest
     create $first [list take [expr {$num - 1}] [{*}$rest]]
   }
 }
@@ -167,10 +167,10 @@ proc stream::ForeachMultiStream {items body} {
 }
 
 proc stream::MapSingleStream {cmdPrefix stream} {
-  lassign $stream first rest
   if {[isEmpty $stream]} {
     return $stream
   }
+  lassign $stream first rest
   create [{*}$cmdPrefix $first] [list MapSingleStream $cmdPrefix [{*}$rest]]
 }
 
