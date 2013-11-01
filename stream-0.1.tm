@@ -46,6 +46,11 @@ proc stream::foreach {args} {
   }
 }
 
+proc stream::fromList {_list {index 0}} {
+  if {$index >= [llength $_list]} {return {}}
+  create [lindex $_list $index] [list fromList $_list [expr {$index + 1}]]
+}
+
 proc stream::isEmpty {stream} {
   expr {[llength $stream] == 0}
 }

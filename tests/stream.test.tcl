@@ -108,6 +108,15 @@ processing multiple streams} \
 } -result 11
 
 
+test fromList-1 {Checks that values are represented in stream} \
+-setup {
+  set aList {7 9 4 1 2 4 5 10 hello}
+} -body {
+  set aStream [stream fromList $aList]
+  stream toList $aStream
+} -result {7 9 4 1 2 4 5 10 hello}
+
+
 test isEmpty-1 {Checks that returns false if list not empty} \
 -setup {
   set seq [TestHelpers::range 1 1]
