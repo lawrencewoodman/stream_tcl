@@ -54,6 +54,9 @@ Passes _initialValue_ to _cmdPrefix_ followed by the first element of each _stre
 **stream foreach** _varName_ _stream_ _?varName stream ..?_ _body_<br />
 Evaluates _body_ with each element of the _stream_s accessed by their associated _varName_ variable.  The command returns the result of the last value returned in _body_.  Processing of _stream_s finishes when the first _stream_ is empty.
 
+**stream fromList** _aList_<br />
+Creates a new stream where each element is an element from _aList_ in the same order.
+
 **stream isEmpty** _stream_<br />
 Returns whether the _stream_ is empty.
 
