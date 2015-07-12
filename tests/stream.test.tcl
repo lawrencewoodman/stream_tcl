@@ -63,6 +63,46 @@ multiple streams} \
   stream foldl sumMul 3 $seq1 $seq2
 } -result 73
 
+test foldl-5 {Checks that runs cmdPrefix at correct level with a single stream} \
+-setup {
+  namespace eval fold-5Test {
+    set seq1 [TestHelpers::range 1 5]
+    proc sum {ns runningTotal a} {
+      foreach n $ns {
+        incr runningTotal $n
+      }
+      expr {$runningTotal + $a}
+    }
+  }
+} -body {
+  namespace eval fold-5Test {
+    stream foldl [list sum {5 6}] 3 $seq1
+  }
+} -cleanup {
+  namespace delete fold-5Test
+} -result 73
+
+
+test foldl-6 {Checks that runs cmdPrefix at correct level with multiple streams} \
+-setup {
+  namespace eval fold-6Test {
+    set seq1 [TestHelpers::range 1 5]
+    set seq2 [TestHelpers::range 11 15]
+    proc sum {ns runningTotal a b} {
+      foreach n $ns {
+        incr runningTotal $n
+      }
+      expr {$runningTotal + $a + $b}
+    }
+  }
+} -body {
+  namespace eval fold-6Test {
+    stream foldl [list sum {5 6}] 3 $seq1 $seq2
+  }
+} -cleanup {
+  namespace delete fold-6Test
+} -result 138
+
 
 test foreach-1 {Checks that body is run for each value in stream} \
 -setup {

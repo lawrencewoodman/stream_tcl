@@ -113,7 +113,7 @@ proc stream::FoldlSingleStream {cmdPrefix initialValue stream} {
   set acc $initialValue
   while {![isEmpty $stream]} {
     lassign $stream first rest
-    set acc [{*}$cmdPrefix $acc $first]
+    set acc [uplevel 2 [linsert $cmdPrefix end $acc $first]]
     set stream [{*}$rest]
   }
   return $acc
@@ -133,7 +133,7 @@ proc stream::FoldlMultiStream {cmdPrefix initialValue streams} {
       lappend firsts $first
       lappend restStreams [{*}$rest]
     }
-    set acc [{*}$cmdPrefix $acc {*}$firsts]
+    set acc [uplevel 2 [linsert $cmdPrefix end $acc {*}$firsts]]
     set streams $restStreams
   }
   return $acc
