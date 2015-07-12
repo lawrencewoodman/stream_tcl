@@ -7,3 +7,5 @@ Design Decisions
 
 
 * Decided to use `select` rather than `filter` as it can seem unclear when reading code with filters in, whether the filter is selecting or rejecting elements.
+
+* Most implementations of the streams from SICP memoize the stream, but I think this is a bad idea as one of the benefits of streams is the ability to process large amounts of data, which has the capacity to exceed the available memory.  Therefore I have chosen not to memoize this implementation.
